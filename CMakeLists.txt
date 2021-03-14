@@ -12,7 +12,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME})
 set(INC
         include/jobs.h
         include/private/work_stealing_queue.h
-        include/private/api_types.h)
+        include/private/api_types.h
+        include/private/api_defines.h)
      
 set(SRC
         src/work_stealing_queue.c)

@@ -1,9 +1,20 @@
-#ifndef JOBS_API_TYPES_H
-#define JOBS_API_TYPES_H
+#ifndef PRIVATE_TYPES_H
+#define PRIVATE_TYPES_H
 
+#include "api_defines.h"
+#include <assert.h>
+#include <stdint.h>
+
+typedef void (*job_function)(const void *, const void *);
 typedef struct job {
-  void* sampleData;
-  /* data */
+  job_function function;
+  struct job *parent;
+  void *data;
+  int32_t unfinishedJobs;
+  char padding[JOB_PADDING_BYTES];
 } job;
+
+_Static_assert((sizeof(struct job) % JOB_CACHE_LINE_SIZE) == 0,
+               "Job struct is not cache-line-aligned");
 
 #endif

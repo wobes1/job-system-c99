@@ -3,5 +3,4 @@
 
 #include "private/work_stealing_queue.h"
 
-
 #endif

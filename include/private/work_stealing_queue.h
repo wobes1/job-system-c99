@@ -1,5 +1,5 @@
-#include <assert.h>
 #include "api_types.h"
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
