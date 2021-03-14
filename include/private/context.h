@@ -8,7 +8,7 @@ typedef struct context {
   work_stealing_queue **worker_job_queues;
   void *job_pool_buffer;
   void *queue_entry_buffer;
-  int next_worker_id;
+  atomic_int next_worker_id;
   int num_worker_threads;
   int max_jobs_per_thread;
 } context;

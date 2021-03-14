@@ -10,7 +10,7 @@ typedef struct job {
   job_function function;
   struct job *parent;
   void *data;
-  int32_t unfinished_jobs;
+  int_fast32_t unfinished_jobs;
   char padding[JOB_PADDING_BYTES];
 } job;
 

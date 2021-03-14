@@ -56,7 +56,7 @@ job *work_stealing_queue_pop(work_stealing_queue *queue) {
 
   // Make sure m_bottom is published before reading top.
   // Requires a full StoreLoad memory barrier, even on x86/64.
-  __sync_synchronize();
+  __atomic_thread_fence(memory_order_seq_cst);
 
   uint64_t top = queue->top;
   if (top <= bottom) {

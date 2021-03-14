@@ -50,7 +50,7 @@ context *context_create(int num_workers, int max_jobs_per_worker) {
 int worker_init(context *ctx) {
   tls_jobContext = ctx;
   tls_jobCount = 0;
-  tls_workerId = ctx->next_worker_id++;
+  tls_workerId = __atomic_fetch_add(&ctx->next_worker_id,1, __ATOMIC_SEQ_CST);
   assert(tls_workerId < ctx->num_worker_threads);
   void *jobPoolBufferAligned =
       (void *)((uintptr_t)ctx->job_pool_buffer + JOB_CACHE_LINE_SIZE - 1 &

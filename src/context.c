@@ -4,6 +4,9 @@
 context *context_init(int num_worker_threads, int max_job_per_thread) {
   context *context = malloc(sizeof(context));
 
+  context->next_worker_id = 0;
+  context->num_worker_threads = num_worker_threads;
+
   max_job_per_thread = nex_power_of_two_get(max_job_per_thread);
   context->max_jobs_per_thread = max_job_per_thread;
 
