@@ -13,7 +13,7 @@ static int_fast32_t finished_job_count = 0;
 static void empty_job(job *job, const void *data) {
   (void)job;
   (void)data;
-  finished_job_count++;
+  __atomic_fetch_add(&finished_job_count, 1, __ATOMIC_SEQ_CST);
 }
 
 static void empty_worker_test(context *context) {
