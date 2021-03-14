@@ -1,8 +1,8 @@
-#include "api_types.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "api_types.h"
 
 typedef struct work_stealing_queue {
   job **entries;

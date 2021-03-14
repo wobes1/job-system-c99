@@ -3,5 +3,6 @@
 
 #include "private/work_stealing_queue.h"
 #include "private/context.h"
+#include "private/jobs_api.h"
 
 #endif

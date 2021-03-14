@@ -14,11 +14,13 @@ set(INC
         include/private/work_stealing_queue.h
         include/private/api_defines.h
         include/private/api_types.h
-        include/private/context.h)
+        include/private/context.h
+        include/private/jobs_api.h)
      
 set(SRC
         src/work_stealing_queue.c
-        src/context.c)
+        src/context.c
+        src/jobs_api.c)
 
 add_library(jobs SHARED ${INC} ${SRC})
 target_default_compile_options_c(jobs)

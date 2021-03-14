@@ -33,6 +33,7 @@
         "xutility": "cpp",
         "assert.h": "c",
         "api_types.h": "c",
-        "api_defines.h": "c"
+        "api_defines.h": "c",
+        "context.h": "c"
     }
 }

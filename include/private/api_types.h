@@ -1,9 +1,9 @@
 #ifndef JOBS_API_TYPES_H
 #define JOBS_API_TYPES_H
 
-#include "api_defines.h"
 #include <assert.h>
 #include <stdint.h>
+#include "api_defines.h"
 
 typedef void (*job_function)(const void *, const void *);
 typedef struct job {
