@@ -1,18 +1,8 @@
-#ifndef WORK_STEALING_QUEUE_H
-#define WORK_STEALING_QUEUE_H
-
 #include <jobs.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-typedef struct work_stealing_queue {
-  job **entries;
-  uint64_t top;
-  uint64_t bottom;
-  int capacity;
-} work_stealing_queue;
 
 static size_t BufferSize(int capacity) { return capacity * sizeof(job *); }
 
@@ -114,5 +104,3 @@ job *work_stealing_queue_steal(work_stealing_queue *queue) {
     return NULL; // queue empty
   }
 }
-
-#endif
