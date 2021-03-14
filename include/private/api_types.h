@@ -1,5 +1,5 @@
-#ifndef PRIVATE_TYPES_H
-#define PRIVATE_TYPES_H
+#ifndef JOBS_API_TYPES_H
+#define JOBS_API_TYPES_H
 
 #include "api_defines.h"
 #include <assert.h>
@@ -10,7 +10,7 @@ typedef struct job {
   job_function function;
   struct job *parent;
   void *data;
-  int32_t unfinishedJobs;
+  int32_t unfinished_jobs;
   char padding[JOB_PADDING_BYTES];
 } job;
 

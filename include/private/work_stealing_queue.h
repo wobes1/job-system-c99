@@ -11,10 +11,10 @@ typedef struct work_stealing_queue {
   int capacity;
 } work_stealing_queue;
 
-static size_t buffer_size_get(int capacity);
+size_t buffer_size_get(int capacity);
 extern work_stealing_queue *work_stealing_queue_init(int capacity, void *buffer,
-                                                     size_t bufferSize);
+                                                     size_t buffer_size);
+
 extern int work_stealing_queue_push(work_stealing_queue *queue, job *job);
 extern job *work_stealing_queue_pop(work_stealing_queue *queue);
-
 extern job *work_stealing_queue_steal(work_stealing_queue *queue);

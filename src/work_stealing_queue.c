@@ -1,31 +1,31 @@
-#include <jobs.h>
 #include <assert.h>
+#include <jobs.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
-static size_t BufferSize(int capacity) { return capacity * sizeof(job *); }
+size_t buffer_size_get(int capacity) { return capacity * sizeof(job *); }
 
 work_stealing_queue *work_stealing_queue_init(int capacity, void *buffer,
-                                              size_t bufferSize) {
+                                              size_t buffer_size) {
   work_stealing_queue *queue = malloc(sizeof(work_stealing_queue));
   if ((capacity & (capacity - 1)) != 0) {
     perror("Capacity must be a power of 2");
     return NULL;
   }
 
-  size_t minBufferSize = BufferSize(capacity);
-  if (bufferSize < minBufferSize) {
+  size_t min_buffer_size = buffer_size_get(capacity);
+  if (buffer_size < min_buffer_size) {
     perror("Inadequate buffer size");
     return NULL;
   }
-  uint8_t *bufferNext = (uint8_t *)buffer;
-  queue->entries = (job **)bufferNext;
-  bufferNext += capacity * sizeof(job *);
-  assert(bufferNext - (uint8_t *)buffer == (intptr_t)minBufferSize);
+  uint8_t *buffer_next = (uint8_t *)buffer;
+  queue->entries = (job **)buffer_next;
+  buffer_next += capacity * sizeof(job *);
+  assert(buffer_next - (uint8_t *)buffer == (intptr_t)min_buffer_size);
 
-  for (int iEntry = 0; iEntry < capacity; iEntry += 1) {
-    queue->entries[iEntry] = NULL;
+  for (int entry = 0; entry < capacity; entry += 1) {
+    queue->entries[entry] = NULL;
   }
 
   queue->top = 0;
@@ -37,15 +37,15 @@ work_stealing_queue *work_stealing_queue_init(int capacity, void *buffer,
 
 int work_stealing_queue_push(work_stealing_queue *queue, job *job) {
   // TODO: assert that this is only ever called by the owning thread
-  uint64_t jobIndex = queue->bottom;
-  queue->entries[jobIndex & (queue->capacity - 1)] = job;
+  uint64_t job_index = queue->bottom;
+  queue->entries[job_index & (queue->capacity - 1)] = job;
 
   // Ensure the job is written before the m_bottom increment is published.
   // A StoreStore memory barrier would also be necessary on platforms with a
   // weak memory model.
   __sync_synchronize();
 
-  queue->bottom = jobIndex + 1;
+  queue->bottom = job_index + 1;
   return 0;
 }
 

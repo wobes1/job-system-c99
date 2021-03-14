@@ -12,11 +12,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME})
 set(INC
         include/jobs.h
         include/private/work_stealing_queue.h
+        include/private/api_defines.h
         include/private/api_types.h
-        include/private/api_defines.h)
+        include/private/context.h)
      
 set(SRC
-        src/work_stealing_queue.c)
+        src/work_stealing_queue.c
+        src/context.c)
 
 add_library(jobs SHARED ${INC} ${SRC})
 target_default_compile_options_c(jobs)
