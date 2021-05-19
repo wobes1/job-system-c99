@@ -38,12 +38,12 @@ int main(void) {
 
     clock_t start = clock();
     pthread_t workers[NUM_WORKERS_THREADS];
-    for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id += 1) {
+    for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id++) {
       workers[thread_id] =
           pthread_create(&workers[thread_id], NULL, empty_worker_test, context);
     }
 
-    for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id += 1) {
+    for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id++) {
 
       pthread_join(workers[thread_id], NULL);
     }

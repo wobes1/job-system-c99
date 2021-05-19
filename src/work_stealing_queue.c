@@ -28,77 +28,83 @@ work_stealing_queue *work_stealing_queue_init(int capacity, void *buffer,
     queue->entries[entry] = NULL;
   }
 
-  queue->top = 0;
-  queue->bottom = 0;
+  atomic_store(&queue->top, 0);
+  atomic_store(&queue->bottom, 0);
   queue->capacity = capacity;
 
   return queue;
 }
 
 int work_stealing_queue_push(work_stealing_queue *queue, job *job) {
-  // TODO: assert that this is only ever called by the owning thread
-  uint64_t job_index = queue->bottom;
-  queue->entries[job_index & (queue->capacity - 1)] = job;
+  uint32_t job_index =
+      atomic_load_explicit(&queue->bottom, memory_order_relaxed);
+  atomic_store_explicit(&queue->entries[job_index & (queue->capacity - 1)], job,
+                        memory_order_relaxed);
 
-  // Ensure the job is written before the m_bottom increment is published.
-  // A StoreStore memory barrier would also be necessary on platforms with a
-  // weak memory model.
   __sync_synchronize();
 
-  queue->bottom = job_index + 1;
+  atomic_store_explicit(&queue->bottom, job_index + 1, memory_order_relaxed);
   return 0;
 }
 
 job *work_stealing_queue_pop(work_stealing_queue *queue) {
-  // TODO: assert that this is only ever called by the owning thread
-  uint64_t bottom = queue->bottom - 1;
-  queue->bottom = bottom;
+  uint32_t bottom =
+      atomic_load_explicit(&queue->bottom, memory_order_relaxed) - 1;
+
+  atomic_store_explicit(&queue->bottom, bottom, memory_order_relaxed);
 
   // Make sure m_bottom is published before reading top.
   // Requires a full StoreLoad memory barrier, even on x86/64.
   __atomic_thread_fence(memory_order_seq_cst);
 
-  uint64_t top = queue->top;
+  uint32_t top = atomic_load_explicit(&queue->top, memory_order_relaxed);
   if (top <= bottom) {
-    job *job = queue->entries[bottom & (queue->capacity - 1)];
+    job *job = atomic_load_explicit(
+        &queue->entries[bottom & (queue->capacity - 1)], memory_order_relaxed);
     if (top != bottom) {
       // still >0 jobs left in the queue
       return job;
     } else {
 
       // popping the last element in the queue
-      if (!__atomic_compare_exchange_n(&queue->top, &top, top, false, 0, 0)) {
+      if (!atomic_compare_exchange_strong_explicit(&queue->top, &top, top + 1,
+                                                   memory_order_seq_cst,
+                                                   memory_order_relaxed)) {
         // failed race against Steal()
         job = NULL;
       }
-      queue->bottom = top + 1;
+      atomic_store_explicit(&queue->bottom, top + 1, memory_order_relaxed);
       return job;
     }
   } else {
     // queue already empty
-    queue->bottom = top;
+
+    atomic_store_explicit(&queue->bottom, top, memory_order_relaxed);
     return NULL;
   }
 }
 
 job *work_stealing_queue_steal(work_stealing_queue *queue) {
-  // TODO: assert that this is never called by the owning thread
-  uint64_t top = queue->top;
+  uint32_t top = atomic_load_explicit(&queue->top, memory_order_acquire);
 
   // Ensure top is always read before bottom.
   // A LoadLoad memory barrier would also be necessary on platforms with a weak
   // memory model.
   __sync_synchronize();
 
-  uint64_t bottom = queue->bottom;
+  uint32_t bottom = atomic_load_explicit(&queue->bottom, memory_order_acquire);
   if (top < bottom) {
-    job *job = queue->entries[top & (queue->capacity - 1)];
+    job *job = atomic_load_explicit(
+        &queue->entries[top & (queue->capacity - 1)], memory_order_consume);
     // CAS serves as a compiler barrier as-is.
-    if (!__atomic_compare_exchange_n(&queue->top, &top, top + 1, false, 0, 0)) {
+    if (!atomic_compare_exchange_strong_explicit(&queue->top, &top, top + 1,
+                                                 memory_order_seq_cst,
+                                                 memory_order_relaxed)) {
       // concurrent Steal()/Pop() got this entry first.
       return NULL;
     }
-    queue->entries[top & (queue->capacity - 1)] = NULL;
+    atomic_store_explicit(&queue->entries[top & (queue->capacity - 1)], NULL,
+                          memory_order_relaxed);
     return job;
   } else {
     return NULL; // queue empty

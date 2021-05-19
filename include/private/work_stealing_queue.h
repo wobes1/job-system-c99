@@ -8,7 +8,7 @@
 typedef struct work_stealing_queue {
   job **entries;
   atomic_uint top;
-  uint64_t bottom;
+  atomic_uint bottom;
   int capacity;
 } work_stealing_queue;
 
