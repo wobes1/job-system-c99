@@ -6,11 +6,13 @@
 #include <pthread.h>
 
 #define NUM_WORKERS_THREADS 8
-#define TOTAL_JOB_COUNT (64 * 1024)
+#define TOTAL_JOB_COUNT (128 * 1024)
+#define BILLION 1000000000L
+
 static const int MAX_JOBS_PER_THREAD = (TOTAL_JOB_COUNT / NUM_WORKERS_THREADS);
 static int_fast32_t finished_job_count = 0;
 
-static void empty_job(job *job, const void *data) {
+static job_function empty_job(job *job, const void *data) {
   (void)job;
   (void)data;
   __atomic_fetch_add(&finished_job_count, 1, __ATOMIC_SEQ_CST);
@@ -36,7 +38,11 @@ int main(void) {
   {
     context *context = context_create(NUM_WORKERS_THREADS, MAX_JOBS_PER_THREAD);
 
-    clock_t start = clock();
+    struct timespec start, end;
+    uint64_t elapsed;
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
     pthread_t workers[NUM_WORKERS_THREADS];
 
     for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id++) {
@@ -48,10 +54,14 @@ int main(void) {
       pthread_join(workers[thread_id], NULL);
     }
 
-    clock_t stop = clock();
-    double elapsed = (double)(stop - start) * 1000.0 / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_MONOTONIC, &end);
 
-    printf("%d jobs complete in %.3fms\n", (int)finished_job_count, elapsed);
+    elapsed =
+        BILLION * (end.tv_sec - start.tv_sec) + end.tv_nsec - start.tv_nsec;
+
+    printf("%d jobs complete in %llu nanoseconds\n", (int)finished_job_count,
+           (long long unsigned int)elapsed);
+
     context_destroy(context);
   }
 
