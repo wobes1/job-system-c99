@@ -16,10 +16,10 @@ static void empty_job(job *job, const void *data) {
   __atomic_fetch_add(&finished_job_count, 1, __ATOMIC_SEQ_CST);
 }
 
-static void empty_worker_test(context *context) {
-  int worker_id = worker_init(context);
+static void *empty_worker_test(void *ctx) {
+  int worker_id = worker_init(ctx);
 
-  const int job_count = context->max_jobs_per_thread;
+  const int job_count = ((context *)ctx)->max_jobs_per_thread;
   int jobId = (worker_id << 16) | 0;
   job *root = job_create(empty_job, NULL, &jobId, sizeof(int));
   job_enqueue(root);
@@ -38,9 +38,9 @@ int main(void) {
 
     clock_t start = clock();
     pthread_t workers[NUM_WORKERS_THREADS];
+
     for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id++) {
-      workers[thread_id] =
-          pthread_create(&workers[thread_id], NULL, empty_worker_test, context);
+      pthread_create(&workers[thread_id], NULL, empty_worker_test, context);
     }
 
     for (int thread_id = 0; thread_id < NUM_WORKERS_THREADS; thread_id++) {
